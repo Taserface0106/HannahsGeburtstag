@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Das Geheimnis von Blackwood Manor</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height:100%; overflow:hidden; background:#0a0a0a; font-family: 'Georgia', 'Times New Roman', serif; }
+  #app { position:fixed; inset:0; width:100%; height:100%; overflow:hidden; }
+
+  /* ---------- START SCREEN ---------- */
+  #startScreen {
+    position:absolute; inset:0; z-index:100;
+    background: radial-gradient(ellipse at center, #2a1f1a 0%, #0a0605 100%);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding:24px; color:#e8d9b5;
+  }
+  #startScreen h1 {
+    font-size:1.8rem; letter-spacing:2px; margin-bottom:14px; color:#d4af6a;
+    text-shadow: 0 0 20px rgba(212,175,106,0.4);
+  }
+  #startScreen p { font-size:0.95rem; line-height:1.5; max-width:340px; color:#c9b98f; margin-bottom:28px; }
+  .btn-main {
+    background: linear-gradient(180deg,#3a2a1a,#1f150c);
+    border: 1px solid #8a6a3a; color:#e8d9b5; padding:14px 32px;
+    font-size:1.05rem; letter-spacing:1px; border-radius:4px; font-family:inherit;
+    cursor:pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  }
+  .btn-main:active { transform: scale(0.97); }
+
+  /* ---------- GAME SCREEN ---------- */
+  #gameScreen { position:absolute; inset:0; display:none; }
+  #gameScreen.active { display:block; }
+
+  #roomImageWrap { position:absolute; inset:0; overflow:hidden; }
+  #roomImage {
+    width:100%; height:100%; object-fit:cover; display:block;
+    transition: opacity 0.35s ease;
+  }
+  #roomImage.fading { opacity:0; }
+
+  #roomTitle {
+    position:absolute; top:14px; left:50%; transform:translateX(-50%);
+    color:#e8d9b5; font-size:0.85rem; letter-spacing:2px; text-transform:uppercase;
+    background:rgba(10,8,6,0.55); padding:6px 16px; border-radius:20px;
+    pointer-events:none; z-index:20; border:1px solid rgba(212,175,106,0.3);
+  }
+
+  /* ---------- HOTSPOTS ---------- */
+  .hotspot {
+    position:absolute; background:transparent; border:none; cursor:pointer; z-index:15;
+    transition: transform 0.18s ease;
+  }
+  .hotspot:active { transform:scale(1.25); }
+  .hotspot.found { pointer-events:none; }
+
+  /* ---------- EXIT BUTTONS ---------- */
+  #exitBar {
+    position:absolute; bottom:0; left:0; right:0; z-index:20;
+    display:flex; gap:8px; padding:10px 10px 16px; overflow-x:auto;
+    background: linear-gradient(0deg, rgba(0,0,0,0.75) 20%, transparent 100%);
+  }
+  .exit-btn {
+    flex-shrink:0; background:rgba(20,15,10,0.85); border:1px solid rgba(212,175,106,0.5);
+    color:#e8d9b5; padding:10px 16px; border-radius:22px; font-size:0.82rem;
+    font-family:inherit; white-space:nowrap; letter-spacing:0.5px;
+  }
+  .exit-btn:active { background:rgba(212,175,106,0.3); }
+  .exit-btn.locked { opacity:0.55; border-color:rgba(150,80,80,0.6); }
+
+  /* ---------- BAG BUTTON ---------- */
+  #bagBtn {
+    position:absolute; top:14px; right:14px; z-index:25;
+    width:52px; height:52px; border-radius:50%; border:2px solid rgba(212,175,106,0.6);
+    background:rgba(15,10,6,0.75); display:flex; align-items:center; justify-content:center;
+    padding:8px;
+  }
+  #bagBtn img { width:100%; height:100%; object-fit:contain; }
+  #bagCount {
+    position:absolute; bottom:-4px; right:-4px; background:#8a2a2a; color:#fff;
+    font-size:0.68rem; padding:2px 6px; border-radius:10px; font-family:sans-serif;
+    min-width:16px; text-align:center;
+  }
+
+  /* ---------- MUTE BUTTON ---------- */
+  #muteBtn {
+    position:absolute; top:14px; left:14px; z-index:25;
+    width:40px; height:40px; border-radius:50%; border:1px solid rgba(212,175,106,0.5);
+    background:rgba(15,10,6,0.7); color:#d4af6a; font-size:1.1rem; display:flex;
+    align-items:center; justify-content:center;
+  }
+  #audioWarning {
+    position:absolute; top:60px; left:14px; z-index:25; max-width:200px;
+    background:rgba(120,30,30,0.85); color:#f5e5c8; font-size:0.7rem; padding:6px 10px;
+    border-radius:6px; display:none; font-family:sans-serif; line-height:1.4;
+  }
+
+  /* ---------- ITEM FOUND POPUP ---------- */
+  #itemPopup {
+    position:absolute; inset:0; z-index:60; display:none;
+    background:rgba(5,3,2,0.85); align-items:center; justify-content:center; flex-direction:column;
+    padding:24px; text-align:center;
+  }
+  #itemPopup.active { display:flex; }
+  #itemPopup img {
+    width:150px; height:150px; object-fit:contain; margin-bottom:18px;
+    filter: drop-shadow(0 0 24px rgba(212,175,106,0.5));
+    animation: popIn 0.4s ease;
+  }
+  @keyframes popIn { from{ transform:scale(0.3); opacity:0; } to{ transform:scale(1); opacity:1; } }
+  #itemPopup .label { color:#d4af6a; font-size:0.85rem; letter-spacing:2px; text-transform:uppercase; margin-bottom:24px; }
+  #itemPopup button { margin-top:8px; }
+
+  /* ---------- MODALS (bag, drawer, picture, letter) ---------- */
+  .modal-overlay {
+    position:absolute; inset:0; z-index:70; display:none;
+    background:rgba(5,3,2,0.9); align-items:center; justify-content:center; padding:20px;
+    overflow-y:auto;
+  }
+  .modal-overlay.active { display:flex; }
+  .modal-box {
+    background: linear-gradient(180deg,#1c140d,#100b07);
+    border:1px solid rgba(212,175,106,0.4); border-radius:10px;
+    max-width:420px; width:100%; max-height:88vh; overflow-y:auto;
+    padding:22px; color:#e8d9b5; position:relative;
+  }
+  .modal-close {
+    position:absolute; top:10px; right:14px; background:none; border:none;
+    color:#d4af6a; font-size:1.4rem; cursor:pointer; font-family:sans-serif;
+  }
+  .modal-box h2 { font-size:1.1rem; letter-spacing:1px; color:#d4af6a; margin-bottom:16px; text-align:center; }
+
+  #inventoryGrid { display:grid; grid-template-columns: repeat(3,1fr); gap:10px; }
+  .inv-slot {
+    aspect-ratio:1; background:rgba(212,175,106,0.08); border:1px solid rgba(212,175,106,0.25);
+    border-radius:8px; display:flex; align-items:center; justify-content:center; padding:8px;
+  }
+  .inv-slot img { width:100%; height:100%; object-fit:contain; }
+  .inv-empty { text-align:center; color:#8a7a5a; font-size:0.85rem; padding:20px 0; }
+
+  /* drawer / picture reveal */
+  .reveal-stage { text-align:center; }
+  .reveal-stage img { width:170px; margin:14px auto; display:block; filter: drop-shadow(0 0 20px rgba(212,175,106,0.4)); cursor:pointer; }
+  .reveal-stage p { font-size:0.88rem; line-height:1.5; color:#c9b98f; margin-bottom:10px; }
+
+  /* letter */
+  #letterModal .modal-box { max-width:460px; }
+  .letter-paper {
+    background: #f2e6c8; color:#3a2a15; border-radius:4px; padding:24px 20px;
+    font-family:'Georgia',serif; box-shadow: inset 0 0 30px rgba(90,60,20,0.15);
+    background-image: radial-gradient(rgba(120,90,40,0.05) 1px, transparent 1px);
+    background-size: 4px 4px;
+  }
+  .letter-paper h3 { text-align:center; font-size:1.2rem; margin-bottom:14px; letter-spacing:1px; }
+  .letter-paper p { font-size:0.95rem; line-height:1.7; margin-bottom:10px; }
+  .letter-paper .sig { text-align:right; font-style:italic; margin-top:16px; }
+
+  #achievementsBox { margin-top:20px; border-top:1px dashed rgba(212,175,106,0.3); padding-top:16px; }
+  #achievementsBox h4 { font-size:0.8rem; letter-spacing:1.5px; color:#d4af6a; margin-bottom:10px; text-transform:uppercase; text-align:center; }
+  .ach-row { display:flex; justify-content:space-between; font-size:0.82rem; padding:5px 2px; border-bottom:1px solid rgba(212,175,106,0.1); }
+  .ach-total { text-align:center; margin-top:12px; font-size:0.9rem; color:#d4af6a; }
+
+  .zip-btn {
+    display:inline-block; margin-top:14px; background:#3a2a1a; color:#e8d9b5;
+    border:1px solid rgba(212,175,106,0.6); padding:12px 22px; border-radius:6px;
+    text-decoration:none; font-size:0.9rem; letter-spacing:0.5px;
+  }
+
+  #doorAudio, #bgAudio {}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- START SCREEN -->
+  <div id="startScreen">
+    <h1>Das Geheimnis von<br>Blackwood Manor</h1>
+    <p>Irgendwo in diesem alten, ehrwürdigen Herrenhaus liegt ein ganz besonderes Geschenk verborgen. Erkunde jeden Raum, entdecke seine Geheimnisse&nbsp;&mdash; und finde heraus, was dich erwartet.</p>
+    <button class="btn-main" id="startBtn">Spiel starten</button>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div id="gameScreen">
+    <div id="roomImageWrap">
+      <img id="roomImage" src="" alt="">
+      <div id="hotspotLayer"></div>
+    </div>
+    <div id="roomTitle"></div>
+    <button id="muteBtn">♪</button>
+    <div id="audioWarning"></div>
+    <button id="bagBtn"><img src="items/tasche.png" alt="Tasche"><span id="bagCount">0</span></button>
+    <div id="exitBar"></div>
+  </div>
+
+  <!-- ITEM FOUND POPUP -->
+  <div id="itemPopup">
+    <img id="itemPopupImg" src="" alt="">
+    <div id="itemPopupName" style="color:#f2e6c8; font-size:1.05rem; letter-spacing:0.5px; margin-bottom:6px;"></div>
+    <div class="label">Gefunden!</div>
+    <button class="btn-main" id="itemPopupClose">Einstecken</button>
+  </div>
+
+  <!-- INVENTORY MODAL -->
+  <div class="modal-overlay" id="inventoryModal">
+    <div class="modal-box">
+      <button class="modal-close" data-close="inventoryModal">×</button>
+      <h2>Deine Tasche</h2>
+      <div id="inventoryGrid"></div>
+    </div>
+  </div>
+
+  <!-- DRAWER MODAL (Büro) -->
+  <div class="modal-overlay" id="drawerModal">
+    <div class="modal-box">
+      <button class="modal-close" data-close="drawerModal">×</button>
+      <h2>Schreibtischschublade</h2>
+      <div class="reveal-stage" id="drawerStage"></div>
+    </div>
+  </div>
+
+  <!-- PICTURE / MAIN GIFT MODAL (Schlafzimmer) -->
+  <div class="modal-overlay" id="pictureModal">
+    <div class="modal-box">
+      <button class="modal-close" data-close="pictureModal">×</button>
+      <h2>Hinter dem Bild</h2>
+      <div class="reveal-stage" id="pictureStage"></div>
+    </div>
+  </div>
+
+  <!-- LETTER / ACHIEVEMENTS MODAL -->
+  <div class="modal-overlay" id="letterModal">
+    <div class="modal-box">
+      <button class="modal-close" data-close="letterModal">×</button>
+      <div class="letter-paper">
+        <h3>Alles Gute zum Geburtstag, mein Bebi!</h3>
+        <p>Du hast es geschafft &mdash; das Geheimnis von Blackwood Manor ist gelüftet.</p>
+        <p>Dein Geschenk ist das Theaterstück <strong>"The Jury Experience"</strong>.</p>
+        <p>Die Aufführung findet statt am <strong>04.10.2026</strong>.</p>
+        <p>In diesem Stück sind wir Teil der Jury, die einen Mordfall vorgelegt bekommt. Gemeinsam mit dem restlichen Publikum dürfen wir Beweise bewerten, analysieren und am Ende den Schuldigen ausmachen.</p>
+        <p class="sig">Ich liebe dich ganz ganz doll!<br>Dein Niklas</p>
+      </div>
+      <div id="achievementsBox">
+        <h4>Gefundene Schätze</h4>
+        <div id="achList"></div>
+        <div class="ach-total" id="achTotal"></div>
+      </div>
+    </div>
+  </div>
+
+  <audio id="doorAudio" src="audio/tuer.mp3" preload="auto"></audio>
+  <audio id="bgAudio" src="audio/hintergrund-musik.mp3" preload="auto" loop></audio>
+</div>
+
+<script>
+/* =========================================================
+   DAS GEHEIMNIS VON BLACKWOOD MANOR
+   Point & Click Geburtstags-Abenteuer
+   ========================================================= */
+
+const IMG = {
+  rooms: {
+    exterior: "rooms/exterior.png",
+    garden: "rooms/garden.png",
+    empfang: "rooms/empfang.png",
+    speisezimmer: "rooms/speisezimmer.png",
+    bibliothek: "rooms/bibliothek.png",
+    wohnzimmer: "rooms/wohnzimmer.png",
+    kueche: "rooms/kueche.png",
+    korridor_eg: "rooms/korridor_eg.png",
+    korridor_1og: "rooms/korridor_1og.png",
+    badezimmer: "rooms/badezimmer.png",
+    buero: "rooms/buero.png",
+    musikzimmer: "rooms/musikzimmer.png",
+    schlafzimmer: "rooms/schlafzimmer.png"
+  },
+  items: {
+    schluessel: "items/schluessel.png",
+    giesskanne: "items/giesskanne.png",
+    vogelnest: "items/vogelnest.png",
+    glocke: "items/glocke.png",
+    brief: "items/brief.png",
+    schluesselbund: "items/schluesselbund.png",
+    besteck: "items/besteck.png",
+    weinflasche: "items/weinflasche.png",
+    kerzenleuchter: "items/kerzenleuchter.png",
+    buch: "items/buch.png",
+    feder: "items/feder.png",
+    globus: "items/globus.png",
+    standuhr: "items/standuhr.png",
+    pfeife: "items/pfeife.png",
+    medaillon: "items/medaillon.png",
+    teekanne: "items/teekanne.png",
+    kraeuter: "items/kraeuter.png",
+    kochbuch: "items/kochbuch.png",
+    wanduhr: "items/wanduhr.png",
+    postkarte: "items/postkarte.png",
+    schirmstaender: "items/schirmstaender.png",
+    taschenuhr: "items/taschenuhr.png",
+    handschuh: "items/handschuh.png",
+    spieluhr: "items/spieluhr.png",
+    seife: "items/seife.png",
+    handspiegel: "items/handspiegel.png",
+    flakon: "items/flakon.png",
+    federbuero: "items/federbuero.png",
+    lampe: "items/lampe.png",
+    kaestchen: "items/kaestchen.png",
+    dr3ikarte: "items/dr3ikarte.png",
+    notenblatt: "items/notenblatt.png",
+    metronom: "items/metronom.png",
+    geigenbogen: "items/geigenbogen.png",
+    kreuz: "items/kreuz.png",
+    wandteppich: "items/wandteppich.png",
+    kerze: "items/kerze.png",
+    umschlag: "items/umschlag.png"
+  }
+};
+
+// ---------- ROOM DATA ----------
+// hotspot coords are percentages [x, y, w, h] of the image area, chosen to be
+// spread across the frame so they are simple to discover by tapping around.
+const ROOMS = {
+  exterior: {
+    name: "Vor dem Herrenhaus",
+    img: IMG.rooms.exterior,
+    exits: [
+      { to: "garden", label: "In den Garten" },
+      { to: "empfang", label: "Haus betreten" }
+    ],
+    items: []
+  },
+  garden: {
+    name: "Der Garten",
+    img: IMG.rooms.garden,
+    exits: [ { to: "exterior", label: "Zurück zum Haus" } ],
+    items: [
+      { id:"schluessel", icon:IMG.items.schluessel, name:"Schlüssel", x:3, y:38, w:30, h:40, special:"key" },
+      { id:"giesskanne", icon:IMG.items.giesskanne, name:"Gießkanne", x:35, y:38, w:30, h:40 },
+      { id:"vogelnest", icon:IMG.items.vogelnest, name:"Vogelnest", x:67, y:38, w:30, h:40 }
+    ]
+  },
+  empfang: {
+    name: "Empfang",
+    img: IMG.rooms.empfang,
+    exits: [
+      { to: "exterior", label: "Nach draußen" },
+      { to: "korridor_eg", label: "Weiter ins Erdgeschoss" },
+      { to: "korridor_1og", label: "Treppe hoch" }
+    ],
+    items: [
+      { id:"glocke", icon:IMG.items.glocke, name:"Glocke", x:3, y:35, w:30, h:42 },
+      { id:"brief", icon:IMG.items.brief, name:"Brief", x:35, y:35, w:30, h:42 },
+      { id:"schluesselbund", icon:IMG.items.schluesselbund, name:"Schlüsselbund", x:67, y:35, w:30, h:42 }
+    ]
+  },
+  korridor_eg: {
+    name: "Korridor, Erdgeschoss",
+    img: IMG.rooms.korridor_eg,
+    exits: [
+      { to: "empfang", label: "Zurück zum Empfang" },
+      { to: "speisezimmer", label: "Speisezimmer" },
+      { to: "bibliothek", label: "Bibliothek" },
+      { to: "wohnzimmer", label: "Wohnzimmer" },
+      { to: "kueche", label: "Küche" }
+    ],
+    items: [
+      { id:"wanduhr", icon:IMG.items.wanduhr, name:"Wanduhr", x:3, y:22, w:30, h:55 },
+      { id:"postkarte", icon:IMG.items.postkarte, name:"Postkarte", x:35, y:22, w:30, h:55 },
+      { id:"schirmstaender", icon:IMG.items.schirmstaender, name:"Schirmständer", x:67, y:22, w:30, h:55 }
+    ]
+  },
+  speisezimmer: {
+    name: "Speisezimmer",
+    img: IMG.rooms.speisezimmer,
+    exits: [ { to: "korridor_eg", label: "Zurück in den Korridor" } ],
+    items: [
+      { id:"besteck", icon:IMG.items.besteck, name:"Besteck", x:3, y:30, w:30, h:50 },
+      { id:"weinflasche", icon:IMG.items.weinflasche, name:"Weinflasche", x:35, y:30, w:30, h:50 },
+      { id:"kerzenleuchter", icon:IMG.items.kerzenleuchter, name:"Kerzenleuchter", x:67, y:30, w:30, h:50 }
+    ]
+  },
+  bibliothek: {
+    name: "Bibliothek",
+    img: IMG.rooms.bibliothek,
+    exits: [ { to: "korridor_eg", label: "Zurück in den Korridor" } ],
+    items: [
+      { id:"buch", icon:IMG.items.buch, name:"Buch", x:3, y:28, w:30, h:52 },
+      { id:"feder", icon:IMG.items.feder, name:"Feder", x:35, y:28, w:30, h:52 },
+      { id:"globus", icon:IMG.items.globus, name:"Globus", x:67, y:28, w:30, h:52 }
+    ]
+  },
+  wohnzimmer: {
+    name: "Wohnzimmer",
+    img: IMG.rooms.wohnzimmer,
+    exits: [ { to: "korridor_eg", label: "Zurück in den Korridor" } ],
+    items: [
+      { id:"standuhr", icon:IMG.items.standuhr, name:"Standuhr", x:3, y:28, w:30, h:52 },
+      { id:"pfeife", icon:IMG.items.pfeife, name:"Pfeife", x:35, y:28, w:30, h:52 },
+      { id:"medaillon", icon:IMG.items.medaillon, name:"Medaillon", x:67, y:28, w:30, h:52 }
+    ]
+  },
+  kueche: {
+    name: "Küche",
+    img: IMG.rooms.kueche,
+    exits: [ { to: "korridor_eg", label: "Zurück in den Korridor" } ],
+    items: [
+      { id:"teekanne", icon:IMG.items.teekanne, name:"Teekanne", x:3, y:28, w:30, h:52 },
+      { id:"kraeuter", icon:IMG.items.kraeuter, name:"Kräuterbund", x:35, y:28, w:30, h:52 },
+      { id:"kochbuch", icon:IMG.items.kochbuch, name:"Kochbuch", x:67, y:28, w:30, h:52 }
+    ]
+  },
+  korridor_1og: {
+    name: "Korridor, 1. Stock",
+    img: IMG.rooms.korridor_1og,
+    exits: [
+      { to: "empfang", label: "Treppe runter" },
+      { to: "badezimmer", label: "Badezimmer" },
+      { to: "buero", label: "Büro" },
+      { to: "musikzimmer", label: "Musikzimmer" },
+      { to: "schlafzimmer", label: "Weiter zum Gang-Ende" }
+    ],
+    items: [
+      { id:"wandteppich", icon:IMG.items.wandteppich, name:"Wandteppich", x:3, y:22, w:30, h:55 },
+      { id:"kreuz", icon:IMG.items.kreuz, name:"Holzkreuz", x:35, y:22, w:30, h:55 },
+      { id:"kerze", icon:IMG.items.kerze, name:"Kerze", x:67, y:22, w:30, h:55 }
+    ]
+  },
+  badezimmer: {
+    name: "Badezimmer",
+    img: IMG.rooms.badezimmer,
+    exits: [ { to: "korridor_1og", label: "Zurück in den Korridor" } ],
+    items: [
+      { id:"seife", icon:IMG.items.seife, name:"Seife", x:3, y:28, w:30, h:52 },
+      { id:"handspiegel", icon:IMG.items.handspiegel, name:"Handspiegel", x:35, y:28, w:30, h:52 },
+      { id:"flakon", icon:IMG.items.flakon, name:"Parfümflakon", x:67, y:28, w:30, h:52 }
+    ]
+  },
+  buero: {
+    name: "Büro",
+    img: IMG.rooms.buero,
+    locked: true,
+    requiresItem: "schluessel",
+    exits: [ { to: "korridor_1og", label: "Zurück in den Korridor" } ],
+    items: [
+      { id:"federbuero", icon:IMG.items.federbuero, name:"Feder", x:3, y:22, w:45, h:38 },
+      { id:"lampe", icon:IMG.items.lampe, name:"Lampe", x:52, y:22, w:45, h:38 }
+    ],
+    special: "drawer"
+  },
+  musikzimmer: {
+    name: "Musikzimmer",
+    img: IMG.rooms.musikzimmer,
+    exits: [ { to: "korridor_1og", label: "Zurück in den Korridor" } ],
+    items: [
+      { id:"notenblatt", icon:IMG.items.notenblatt, name:"Notenblatt", x:3, y:28, w:30, h:52 },
+      { id:"metronom", icon:IMG.items.metronom, name:"Metronom", x:35, y:28, w:30, h:52 },
+      { id:"geigenbogen", icon:IMG.items.geigenbogen, name:"Geigenbogen", x:67, y:28, w:30, h:52 }
+    ]
+  },
+  schlafzimmer: {
+    name: "Schlafzimmer",
+    img: IMG.rooms.schlafzimmer,
+    exits: [ { to: "korridor_1og", label: "Zurück in den Korridor" } ],
+    items: [
+      { id:"taschenuhr", icon:IMG.items.taschenuhr, name:"Taschenuhr", x:3, y:60, w:30, h:35 },
+      { id:"handschuh", icon:IMG.items.handschuh, name:"Handschuh", x:35, y:60, w:30, h:35 },
+      { id:"spieluhr", icon:IMG.items.spieluhr, name:"Spieluhr", x:67, y:60, w:30, h:35 }
+    ],
+    special: "picture",
+    specialSpot: { x:2, y:8, w:45, h:38 }
+  }
+};
+
+// items that count as "easter eggs" per room for the achievement tally
+const ACHIEVEMENT_ROOMS = ["garden","empfang","korridor_eg","speisezimmer","bibliothek","wohnzimmer","kueche","korridor_1og","badezimmer","buero","musikzimmer","schlafzimmer"];
+
+const ITEM_NAMES = {
+  schluessel:"Schlüssel", giesskanne:"Gießkanne", vogelnest:"Vogelnest",
+  glocke:"Glocke", brief:"Brief", schluesselbund:"Schlüsselbund",
+  besteck:"Besteck", weinflasche:"Weinflasche", kerzenleuchter:"Kerzenleuchter",
+  buch:"Buch", feder:"Feder", globus:"Globus",
+  standuhr:"Standuhr", pfeife:"Pfeife", medaillon:"Medaillon",
+  teekanne:"Teekanne", kraeuter:"Kräuterbund", kochbuch:"Kochbuch",
+  wanduhr:"Wanduhr", postkarte:"Postkarte", schirmstaender:"Schirmständer",
+  taschenuhr:"Taschenuhr", handschuh:"Handschuh", spieluhr:"Spieluhr",
+  seife:"Seife", handspiegel:"Handspiegel", flakon:"Parfümflakon",
+  federbuero:"Feder", lampe:"Lampe",
+  notenblatt:"Notenblatt", metronom:"Metronom", geigenbogen:"Geigenbogen",
+  kreuz:"Holzkreuz", wandteppich:"Wandteppich", kerze:"Kerze",
+  kaestchen:"Kästchen"
+};
+
+// ---------- STATE ----------
+let state = {
+  inventory: [],
+  found: {},          // { roomId: [itemIds...] }
+  mainGiftFound: false,
+  drawerOpened: false,
+  pictureOpened: false
+};
+
+function loadState(){
+  // Intentionally does nothing: every time the page is opened, the game
+  // starts completely fresh with no saved progress from previous sessions.
+}
+function saveState(){
+  // No persistence — progress only lives in memory for the current session.
+}
+
+let currentRoom = "exterior";
+let muted = false;
+
+// ---------- DOM refs ----------
+const roomImage = document.getElementById("roomImage");
+const roomTitle = document.getElementById("roomTitle");
+const hotspotLayer = document.getElementById("hotspotLayer");
+const exitBar = document.getElementById("exitBar");
+const bagCount = document.getElementById("bagCount");
+const doorAudio = document.getElementById("doorAudio");
+const bgAudio = document.getElementById("bgAudio");
+
+function renderRoom(roomId, playDoorSound){
+  const room = ROOMS[roomId];
+  currentRoom = roomId;
+
+  roomImage.classList.add("fading");
+  setTimeout(()=>{
+    roomImage.src = room.img;
+    roomTitle.textContent = room.name;
+    roomImage.classList.remove("fading");
+  }, 180);
+
+  if(playDoorSound){
+    try{ doorAudio.currentTime = 0; doorAudio.play().catch(()=>{}); }catch(e){}
+  }
+
+  // hotspots
+  hotspotLayer.innerHTML = "";
+  const foundHere = state.found[roomId] || [];
+
+  room.items.forEach(item=>{
+    if(foundHere.includes(item.id)) return; // already collected, hide
+    const btn = document.createElement("button");
+    btn.className = "hotspot";
+    btn.style.left = item.x + "%";
+    btn.style.top = item.y + "%";
+    btn.style.width = item.w + "%";
+    btn.style.height = item.h + "%";
+    btn.addEventListener("click", ()=> collectItem(roomId, item));
+    hotspotLayer.appendChild(btn);
+  });
+
+  // special room interactions
+  if(room.special === "drawer"){
+    const btn = document.createElement("button");
+    btn.className = "hotspot";
+    btn.style.left = "45%"; btn.style.top = "62%"; btn.style.width = "22%"; btn.style.height = "14%";
+    btn.addEventListener("click", openDrawer);
+    hotspotLayer.appendChild(btn);
+  }
+  if(room.special === "picture"){
+    const sp = room.specialSpot;
+    const btn = document.createElement("button");
+    btn.className = "hotspot";
+    btn.style.left = sp.x + "%"; btn.style.top = sp.y + "%"; btn.style.width = sp.w + "%"; btn.style.height = sp.h + "%";
+    btn.addEventListener("click", openPicture);
+    hotspotLayer.appendChild(btn);
+  }
+
+  // exits
+  exitBar.innerHTML = "";
+  room.exits.forEach(exit=>{
+    const target = ROOMS[exit.to];
+    const b = document.createElement("button");
+    b.className = "exit-btn";
+    let locked = false;
+    if(target.locked && !state.inventory.includes(target.requiresItem)){
+      locked = true;
+    }
+    b.textContent = (locked ? "🔒 " : "") + exit.label;
+    if(locked) b.classList.add("locked");
+    b.addEventListener("click", ()=>{
+      if(locked){
+        flashLocked(b);
+        return;
+      }
+      renderRoom(exit.to, true);
+    });
+    exitBar.appendChild(b);
+  });
+}
+
+function flashLocked(btn){
+  btn.style.background = "rgba(150,50,50,0.5)";
+  setTimeout(()=>{ btn.style.background = ""; }, 400);
+}
+
+function collectItem(roomId, item){
+  if(!state.found[roomId]) state.found[roomId] = [];
+  if(state.found[roomId].includes(item.id)) return;
+  state.found[roomId].push(item.id);
+  if(!state.inventory.includes(item.id)) state.inventory.push(item.id);
+  saveState();
+  showItemPopup(item.icon, item.name);
+  renderRoom(roomId, false);
+  updateBagCount();
+}
+
+function showItemPopup(iconUrl, name){
+  const popup = document.getElementById("itemPopup");
+  document.getElementById("itemPopupImg").src = iconUrl;
+  document.getElementById("itemPopupName").textContent = name || "";
+  popup.classList.add("active");
+}
+document.getElementById("itemPopupClose").addEventListener("click", ()=>{
+  document.getElementById("itemPopup").classList.remove("active");
+});
+
+function updateBagCount(){
+  bagCount.textContent = state.inventory.length;
+}
+
+// ---------- Drawer (dr3i) ----------
+function openDrawer(){
+  const modal = document.getElementById("drawerModal");
+  const stage = document.getElementById("drawerStage");
+  stage.innerHTML = `
+    <p>Du ziehst die Schublade auf und findest ein kleines Kästchen.</p>
+    <img src="${IMG.items.kaestchen}" alt="Kästchen" id="boxImg">
+  `;
+  modal.classList.add("active");
+  document.getElementById("boxImg").addEventListener("click", ()=>{
+    stage.innerHTML = `
+      <p>Im Kästchen liegt eine kleine Sammlung alter CDs. Das sind Drei Fragezeichen Geschichten, die es so nirgendwo mehr zu hören, oder zu kaufen gibt. Ein echter Schatz!</p>
+      <img src="${IMG.items.dr3ikarte}" alt="dr3i Karte" id="dr3iImg">
+      <p style="margin-top:10px;">Tippe auf die Karte um zu den Geschichten zu gelangen.</p>
+    `;
+    document.getElementById("dr3iImg").addEventListener("click", ()=>{
+      state.drawerOpened = true;
+      if(!state.found[currentRoom]) state.found[currentRoom] = [];
+      if(!state.found[currentRoom].includes("kaestchen")) state.found[currentRoom].push("kaestchen");
+      saveState();
+      openCloudLink();
+    });
+  });
+}
+
+function openCloudLink(){
+  window.open("https://www.icloud.com/iclouddrive/040pQv1BFsTdkii53bjwZMHog#DiE_DR3i", "_blank");
+}
+
+// ---------- Picture / Main gift ----------
+function openPicture(){
+  const modal = document.getElementById("pictureModal");
+  const stage = document.getElementById("pictureStage");
+  stage.innerHTML = `
+    <p>Hinter dem schiefen Bild verbirgt sich etwas...</p>
+    <img src="${IMG.items.umschlag}" alt="Umschlag" id="envelopeImg">
+    <p style="margin-top:10px;">Tippe auf den Umschlag, um ihn zu öffnen.</p>
+  `;
+  modal.classList.add("active");
+  document.getElementById("envelopeImg").addEventListener("click", ()=>{
+    state.mainGiftFound = true;
+    saveState();
+    modal.classList.remove("active");
+    renderRoom(currentRoom, false);
+    openLetter();
+  });
+}
+
+function openLetter(){
+  buildAchievements();
+  document.getElementById("letterModal").classList.add("active");
+}
+
+function buildAchievements(){
+  const list = document.getElementById("achList");
+  const totalEl = document.getElementById("achTotal");
+  list.innerHTML = "";
+  let totalFound = 0, totalItems = 0;
+  ACHIEVEMENT_ROOMS.forEach(roomId=>{
+    const room = ROOMS[roomId];
+    let roomTotal = room.items.length;
+    if(room.special === "drawer") roomTotal += 1; // kaestchen counts
+    const foundArr = state.found[roomId] || [];
+    let roomFound = foundArr.length;
+    totalFound += roomFound;
+    totalItems += roomTotal;
+    const row = document.createElement("div");
+    row.className = "ach-row";
+    row.innerHTML = `<span>${room.name}</span><span>${roomFound} / ${roomTotal}</span>`;
+    list.appendChild(row);
+  });
+  totalEl.textContent = `Insgesamt: ${totalFound} von ${totalItems} Schätzen gefunden`;
+}
+
+// ---------- Inventory modal ----------
+document.getElementById("bagBtn").addEventListener("click", ()=>{
+  const grid = document.getElementById("inventoryGrid");
+  grid.innerHTML = "";
+  if(state.inventory.length === 0){
+    grid.innerHTML = `<div class="inv-empty" style="grid-column:1/-1;">Deine Tasche ist noch leer. Erkunde das Haus!</div>`;
+  } else {
+    state.inventory.forEach(itemId=>{
+      const url = IMG.items[itemId];
+      if(!url) return;
+      const slot = document.createElement("div");
+      slot.className = "inv-slot";
+      slot.style.flexDirection = "column";
+      const label = ITEM_NAMES[itemId] || "";
+      slot.innerHTML = `<img src="${url}" alt="" style="flex:1;"><div style="font-size:0.65rem;color:#d4af6a;text-align:center;margin-top:4px;">${label}</div>`;
+      grid.appendChild(slot);
+    });
+  }
+  document.getElementById("inventoryModal").classList.add("active");
+});
+
+// generic modal close buttons
+document.querySelectorAll("[data-close]").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.getElementById(btn.dataset.close).classList.remove("active");
+  });
+});
+
+// ---------- Mute ----------
+document.getElementById("muteBtn").addEventListener("click", ()=>{
+  muted = !muted;
+  bgAudio.muted = muted;
+  document.getElementById("muteBtn").textContent = muted ? "✕" : "♪";
+});
+
+// ---------- Audio diagnostics ----------
+const audioWarning = document.getElementById("audioWarning");
+let missingFiles = [];
+function reportMissing(name){
+  if(!missingFiles.includes(name)){
+    missingFiles.push(name);
+    audioWarning.style.display = "block";
+    audioWarning.textContent = "⚠ Datei fehlt: " + missingFiles.join(", ");
+  }
+}
+bgAudio.addEventListener("error", ()=> reportMissing("hintergrund-musik.mp3"));
+doorAudio.addEventListener("error", ()=> reportMissing("tuer.mp3"));
+
+// ---------- Start ----------
+document.getElementById("startBtn").addEventListener("click", ()=>{
+  loadState();
+  document.getElementById("startScreen").style.display = "none";
+  document.getElementById("gameScreen").classList.add("active");
+  bgAudio.volume = 0.35;
+  bgAudio.play().catch((err)=>{ reportMissing("hintergrund-musik.mp3 (Wiedergabe blockiert)"); });
+  updateBagCount();
+  renderRoom("exterior", false);
+});
+</script>
+</body>
+</html>
