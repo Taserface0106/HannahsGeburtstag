@@ -2,45 +2,32 @@
 
 Ein Point-and-Click-Geburtstagsspiel, gebaut mit HTML, CSS und JavaScript.
 
-## Schritt 1: Bilder herunterladen
+## Was du noch ergänzen musst
 
-Alle Raum- und Gegenstands-Bilder werden lokal eingebunden (nicht mehr über
-externe Links). Führe dazu einmal das mitgelieferte Skript aus, in dem Ordner,
-in dem auch `index.html` liegt:
-
-```bash
-bash download-bilder.sh
-```
-
-Das lädt automatisch alle Bilder in `assets/rooms/` und `assets/items/`. Kein
-manuelles Speichern nötig — nur einmal ausführen (Mac/Linux: direkt im
-Terminal; Windows: über Git Bash oder WSL).
-
-## Schritt 2: Restliche Dateien ergänzen
-
-Danach müssen noch 3 weitere Dateien in den Ordner `assets/` gelegt werden:
+Bevor du das Spiel hochlädst, führst du einmal das Download-Skript aus (siehe unten) und ergänzt die beiden Audiodateien direkt im Hauptordner (kein `assets/`-Unterordner mehr nötig):
 
 ```
 geschenke-spiel/
 ├── index.html          (bereits fertig)
-├── download-bilder.sh  (einmal ausführen, siehe oben)
-├── assets/
-│   ├── rooms/           ← wird durch das Skript automatisch befüllt
-│   ├── items/           ← wird durch das Skript automatisch befüllt
-│   ├── audio/
-│   │   ├── tuer.mp3              ← Sound beim Wechseln des Raums / Tür öffnen
-│   │   └── hintergrund-musik.mp3 ← Background-Musik (läuft in Dauerschleife)
-│   └── geschenk.zip     ← Deine ZIP-Datei mit dem Extra-Geschenk (wird beim
-│                            Anklicken der "dr3i"-Karte im Büro heruntergeladen —
-│                            hat nichts mit dem Haupt-Theaterstück-Geschenk zu tun)
+├── download-bilder.sh / .bat  (einmal ausführen, siehe oben)
+├── rooms/           ← wird durch das Download-Skript automatisch befüllt
+├── items/           ← wird durch das Download-Skript automatisch befüllt
+└── audio/
+    ├── tuer.mp3              ← Sound beim Wechseln des Raums / Tür öffnen
+    ├── hintergrund-musik.mp3 ← Background-Musik (läuft in Dauerschleife)
+    └── keller.mp3            ← Alternative Musik, läuft nur solange man im Keller ist
 ```
 
 Die Dateinamen müssen **exakt** so lauten, wie oben angegeben (Groß-/Kleinschreibung beachten), sonst findet das Spiel sie nicht.
 
+Das Extra-Geschenk im Büro (Schreibtischschublade → "dr3i"-Karte) führt direkt zu
+einem iCloud-Link mit den Dateien — der Link ist schon fest im Code hinterlegt,
+keine ZIP-Datei nötig.
+
 ## Wie du es auf GitHub Pages hostest (kostenlos)
 
 1. Erstelle ein neues Repository auf GitHub (z. B. `blackwood-manor`).
-2. Lade `index.html` und den `assets/`-Ordner (mit den 3 ergänzten Dateien) hoch.
+2. Lade `index.html` sowie die Ordner `rooms/`, `items/` und `audio/` (mit den ergänzten Dateien) hoch.
 3. Gehe in den Repository-Einstellungen zu **Settings → Pages**.
 4. Wähle als Source den `main`-Branch und den Root-Ordner `/ (root)`.
 5. Nach ein paar Minuten ist das Spiel live unter:
@@ -57,10 +44,10 @@ Musikzimmer, Schlafzimmer (ganz hinten im Gang — hier ist das Hauptgeschenk hi
 dem Bild versteckt)
 
 **Extra-Geschenk:** Im Büro, in der Schreibtischschublade, liegt ein Kästchen mit
-einer "dr3i"-Karte. Antippen löst den Download deiner ZIP-Datei aus.
+einer "dr3i"-Karte. Antippen führt direkt zum iCloud-Link mit den Dateien.
 
-**Fortschritt:** Wird automatisch im Browser gespeichert (localStorage) — falls
-jemand die Seite schließt, geht nichts verloren.
+**Fortschritt:** Wird bewusst NICHT gespeichert — jedes Öffnen der Seite startet
+das Spiel komplett neu von vorn.
 
 ## Falls du noch Änderungen willst
 

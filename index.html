@@ -96,6 +96,56 @@
     border-radius:6px; display:none; font-family:sans-serif; line-height:1.4;
   }
 
+  /* ---------- ACHIEVEMENT TOAST ---------- */
+  #achToast {
+    position:absolute; left:50%; bottom:90px; z-index:90;
+    transform:translateX(-50%) translateY(20px); opacity:0;
+    background:linear-gradient(180deg,#3a2a1a,#1f150c); border:1px solid rgba(212,175,106,0.6);
+    color:#f2e6c8; padding:12px 20px; border-radius:10px; max-width:80%;
+    font-size:0.85rem; text-align:center; box-shadow:0 6px 20px rgba(0,0,0,0.5);
+    transition: opacity 0.35s ease, transform 0.35s ease; pointer-events:none;
+  }
+  #achToast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+  /* ---------- MINIGAME MODALS ---------- */
+  .minigame-box { text-align:center; }
+  .minigame-box p { font-size:0.85rem; line-height:1.5; color:#c9b98f; margin-bottom:14px; }
+  .code-input { display:flex; gap:8px; justify-content:center; margin:14px 0; }
+  .code-input input {
+    width:44px; height:52px; text-align:center; font-size:1.3rem; border-radius:6px;
+    border:1px solid rgba(212,175,106,0.5); background:rgba(0,0,0,0.3); color:#f2e6c8;
+    font-family:inherit;
+  }
+  .memory-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:14px 0; }
+  .memory-card {
+    aspect-ratio:1; background:rgba(212,175,106,0.15); border:1px solid rgba(212,175,106,0.4);
+    border-radius:8px; display:flex; align-items:center; justify-content:center; padding:10px;
+    cursor:pointer;
+  }
+  .memory-card img { width:100%; height:100%; object-fit:contain; opacity:0; transition:opacity 0.2s; }
+  .memory-card.revealed img, .memory-card.matched img { opacity:1; }
+  .memory-card.matched { border-color:#6a9a5a; opacity:0.6; pointer-events:none; }
+  .slide-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:4px; margin:14px auto; width:240px; }
+  .slide-tile {
+    aspect-ratio:1; background-size:240px 240px; border-radius:4px; cursor:pointer;
+    border:1px solid rgba(212,175,106,0.3); position:relative;
+  }
+  .slide-tile.selected { outline:3px solid #d4af6a; }
+  .tone-pads { display:flex; flex-wrap:wrap; justify-content:center; gap:10px; margin:14px 0; }
+  .tone-pad {
+    width:64px; aspect-ratio:1; border-radius:12px; border:1px solid rgba(212,175,106,0.4);
+    font-size:0.9rem; color:#1a1208; font-weight:bold; cursor:pointer;
+  }
+  .tone-pad.active { filter:brightness(1.6); }
+  .maze-grid { display:grid; gap:2px; margin:14px auto; width:fit-content; }
+  .maze-cell { width:36px; height:36px; background:rgba(20,15,10,0.9); border:1px solid rgba(212,175,106,0.15); }
+  .maze-cell.wall { background:#0a0705; }
+  .maze-cell.player { background:radial-gradient(circle,#d4af6a 0%,#8a6a3a 70%); }
+  .maze-cell.exit { background:radial-gradient(circle,#6a9a5a 0%,#2a4a1a 70%); }
+  .maze-controls { display:grid; grid-template-columns:repeat(3,52px); grid-template-rows:repeat(2,52px); gap:6px; justify-content:center; margin-top:14px; }
+  .maze-btn { background:rgba(90,60,20,0.9); border:1px solid rgba(212,175,106,0.5); color:#e8d9b5; border-radius:8px; font-size:1.2rem; }
+  .maze-btn.up{grid-column:2;grid-row:1;} .maze-btn.left{grid-column:1;grid-row:2;} .maze-btn.down{grid-column:2;grid-row:2;} .maze-btn.right{grid-column:3;grid-row:2;}
+
   /* ---------- ITEM FOUND POPUP ---------- */
   #itemPopup {
     position:absolute; inset:0; z-index:60; display:none;
@@ -191,6 +241,48 @@
     <div id="audioWarning"></div>
     <button id="bagBtn"><img src="items/tasche.png" alt="Tasche"><span id="bagCount">0</span></button>
     <div id="exitBar"></div>
+    <div id="achToast"></div>
+  </div>
+
+  <!-- MINIGAME MODALS -->
+  <div class="modal-overlay" id="codeModal">
+    <div class="modal-box">
+      <button class="modal-close" data-close="codeModal">×</button>
+      <h2>Das Weinregal</h2>
+      <div class="minigame-box" id="codeStage"></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="memoryModal">
+    <div class="modal-box">
+      <button class="modal-close" data-close="memoryModal">×</button>
+      <h2>Ein altes Kartenspiel</h2>
+      <div class="minigame-box" id="memoryStage"></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="slideModal">
+    <div class="modal-box">
+      <button class="modal-close" data-close="slideModal">×</button>
+      <h2>Das zerrissene Foto</h2>
+      <div class="minigame-box" id="slideStage"></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="toneModal">
+    <div class="modal-box">
+      <button class="modal-close" data-close="toneModal">×</button>
+      <h2>Die Melodie</h2>
+      <div class="minigame-box" id="toneStage"></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="mazeModal">
+    <div class="modal-box">
+      <button class="modal-close" data-close="mazeModal">×</button>
+      <h2>Im Dunkeln zur Truhe</h2>
+      <div class="minigame-box" id="mazeStage"></div>
+    </div>
   </div>
 
   <!-- ITEM FOUND POPUP -->
@@ -245,6 +337,11 @@
         <div id="achList"></div>
         <div class="ach-total" id="achTotal"></div>
       </div>
+      <div id="achievementsBox">
+        <h4>Gelöste Minispiele</h4>
+        <div id="mgList"></div>
+        <div class="ach-total" id="mgTotal"></div>
+      </div>
     </div>
   </div>
 
@@ -272,7 +369,8 @@ const IMG = {
     badezimmer: "rooms/badezimmer.png",
     buero: "rooms/buero.png",
     musikzimmer: "rooms/musikzimmer.png",
-    schlafzimmer: "rooms/schlafzimmer.png"
+    schlafzimmer: "rooms/schlafzimmer.png",
+    keller: "rooms/keller.png"
   },
   items: {
     schluessel: "items/schluessel.png",
@@ -312,7 +410,18 @@ const IMG = {
     kreuz: "items/kreuz.png",
     wandteppich: "items/wandteppich.png",
     kerze: "items/kerze.png",
-    umschlag: "items/umschlag.png"
+    umschlag: "items/umschlag.png",
+    weinkorken: "items/weinkorken.png",
+    lesezeichen: "items/lesezeichen.png",
+    fotofragment: "items/fotofragment.png",
+    stimmgabel: "items/stimmgabel.png",
+    musikschluessel: "items/musikschluessel.png",
+    amulett: "items/amulett.png",
+    rostigeKette: "items/rostigeKette.png",
+    altesPergament: "items/altesPergament.png"
+  },
+  puzzle: {
+    portrait: "rooms/portrait_puzzle.png"
   }
 };
 
@@ -345,7 +454,8 @@ const ROOMS = {
     exits: [
       { to: "exterior", label: "Nach draußen" },
       { to: "korridor_eg", label: "Weiter ins Erdgeschoss" },
-      { to: "korridor_1og", label: "Treppe hoch" }
+      { to: "korridor_1og", label: "Treppe hoch", requiresFlag: "solvedWohnzimmer" },
+      { to: "keller", label: "In den Keller" }
     ],
     items: [
       { id:"glocke", icon:IMG.items.glocke, name:"Glocke", x:3, y:35, w:30, h:42 },
@@ -353,15 +463,25 @@ const ROOMS = {
       { id:"schluesselbund", icon:IMG.items.schluesselbund, name:"Schlüsselbund", x:67, y:35, w:30, h:42 }
     ]
   },
+  keller: {
+    name: "Der Keller",
+    img: IMG.rooms.keller,
+    exits: [ { to: "empfang", label: "Zurück zum Empfang" } ],
+    items: [
+      { id:"rostigeKette", icon:IMG.items.rostigeKette, name:"Rostige Kette", x:3, y:55, w:30, h:38 },
+      { id:"altesPergament", icon:IMG.items.altesPergament, name:"Altes Pergament", x:67, y:40, w:30, h:38 }
+    ],
+    minigame: "maze"
+  },
   korridor_eg: {
     name: "Korridor, Erdgeschoss",
     img: IMG.rooms.korridor_eg,
     exits: [
       { to: "empfang", label: "Zurück zum Empfang" },
       { to: "speisezimmer", label: "Speisezimmer" },
-      { to: "bibliothek", label: "Bibliothek" },
-      { to: "wohnzimmer", label: "Wohnzimmer" },
-      { to: "kueche", label: "Küche" }
+      { to: "bibliothek", label: "Bibliothek", requiresFlag: "solvedSpeisezimmer" },
+      { to: "wohnzimmer", label: "Wohnzimmer", requiresFlag: "solvedBibliothek" },
+      { to: "kueche", label: "Küche", requiresFlag: "solvedWohnzimmer" }
     ],
     items: [
       { id:"wanduhr", icon:IMG.items.wanduhr, name:"Wanduhr", x:3, y:22, w:30, h:55 },
@@ -374,10 +494,11 @@ const ROOMS = {
     img: IMG.rooms.speisezimmer,
     exits: [ { to: "korridor_eg", label: "Zurück in den Korridor" } ],
     items: [
-      { id:"besteck", icon:IMG.items.besteck, name:"Besteck", x:3, y:30, w:30, h:50 },
-      { id:"weinflasche", icon:IMG.items.weinflasche, name:"Weinflasche", x:35, y:30, w:30, h:50 },
+      { id:"besteck", icon:IMG.items.besteck, name:"Besteck", x:3, y:60, w:30, h:35 },
+      { id:"weinflasche", icon:IMG.items.weinflasche, name:"Weinflasche", x:16, y:32, w:32, h:35 },
       { id:"kerzenleuchter", icon:IMG.items.kerzenleuchter, name:"Kerzenleuchter", x:67, y:30, w:30, h:50 }
-    ]
+    ],
+    minigame: "code"
   },
   bibliothek: {
     name: "Bibliothek",
@@ -385,9 +506,10 @@ const ROOMS = {
     exits: [ { to: "korridor_eg", label: "Zurück in den Korridor" } ],
     items: [
       { id:"buch", icon:IMG.items.buch, name:"Buch", x:3, y:28, w:30, h:52 },
-      { id:"feder", icon:IMG.items.feder, name:"Feder", x:35, y:28, w:30, h:52 },
-      { id:"globus", icon:IMG.items.globus, name:"Globus", x:67, y:28, w:30, h:52 }
-    ]
+      { id:"globus", icon:IMG.items.globus, name:"Globus", x:35, y:28, w:30, h:52 },
+      { id:"feder", icon:IMG.items.feder, name:"Feder", x:67, y:28, w:30, h:52 }
+    ],
+    minigame: "memory"
   },
   wohnzimmer: {
     name: "Wohnzimmer",
@@ -397,7 +519,8 @@ const ROOMS = {
       { id:"standuhr", icon:IMG.items.standuhr, name:"Standuhr", x:3, y:28, w:30, h:52 },
       { id:"pfeife", icon:IMG.items.pfeife, name:"Pfeife", x:35, y:28, w:30, h:52 },
       { id:"medaillon", icon:IMG.items.medaillon, name:"Medaillon", x:67, y:28, w:30, h:52 }
-    ]
+    ],
+    minigame: "slide"
   },
   kueche: {
     name: "Küche",
@@ -417,7 +540,7 @@ const ROOMS = {
       { to: "badezimmer", label: "Badezimmer" },
       { to: "buero", label: "Büro" },
       { to: "musikzimmer", label: "Musikzimmer" },
-      { to: "schlafzimmer", label: "Weiter zum Gang-Ende" }
+      { to: "schlafzimmer", label: "Weiter zum Gang-Ende", requiresFlags: ["solvedMusikzimmer","solvedKeller"] }
     ],
     items: [
       { id:"wandteppich", icon:IMG.items.wandteppich, name:"Wandteppich", x:3, y:22, w:30, h:55 },
@@ -450,12 +573,15 @@ const ROOMS = {
   musikzimmer: {
     name: "Musikzimmer",
     img: IMG.rooms.musikzimmer,
+    locked: true,
+    requiresItem: "musikschluessel",
     exits: [ { to: "korridor_1og", label: "Zurück in den Korridor" } ],
     items: [
       { id:"notenblatt", icon:IMG.items.notenblatt, name:"Notenblatt", x:3, y:28, w:30, h:52 },
       { id:"metronom", icon:IMG.items.metronom, name:"Metronom", x:35, y:28, w:30, h:52 },
       { id:"geigenbogen", icon:IMG.items.geigenbogen, name:"Geigenbogen", x:67, y:28, w:30, h:52 }
-    ]
+    ],
+    minigame: "tone"
   },
   schlafzimmer: {
     name: "Schlafzimmer",
@@ -472,7 +598,7 @@ const ROOMS = {
 };
 
 // items that count as "easter eggs" per room for the achievement tally
-const ACHIEVEMENT_ROOMS = ["garden","empfang","korridor_eg","speisezimmer","bibliothek","wohnzimmer","kueche","korridor_1og","badezimmer","buero","musikzimmer","schlafzimmer"];
+const ACHIEVEMENT_ROOMS = ["garden","empfang","keller","korridor_eg","speisezimmer","bibliothek","wohnzimmer","kueche","korridor_1og","badezimmer","buero","musikzimmer","schlafzimmer"];
 
 const ITEM_NAMES = {
   schluessel:"Schlüssel", giesskanne:"Gießkanne", vogelnest:"Vogelnest",
@@ -487,7 +613,10 @@ const ITEM_NAMES = {
   federbuero:"Feder", lampe:"Lampe",
   notenblatt:"Notenblatt", metronom:"Metronom", geigenbogen:"Geigenbogen",
   kreuz:"Holzkreuz", wandteppich:"Wandteppich", kerze:"Kerze",
-  kaestchen:"Kästchen"
+  kaestchen:"Kästchen",
+  weinkorken:"Weinkorken", lesezeichen:"Lesezeichen", fotofragment:"Foto-Fragment",
+  stimmgabel:"Stimmgabel", musikschluessel:"Musikzimmer-Schlüssel",
+  amulett:"Altes Amulett", rostigeKette:"Rostige Kette", altesPergament:"Altes Pergament"
 };
 
 // ---------- STATE ----------
@@ -496,7 +625,13 @@ let state = {
   found: {},          // { roomId: [itemIds...] }
   mainGiftFound: false,
   drawerOpened: false,
-  pictureOpened: false
+  pictureOpened: false,
+  solvedSpeisezimmer: false,   // wine code lock -> unlocks Bibliothek
+  solvedBibliothek: false,     // memory game -> unlocks Wohnzimmer
+  solvedWohnzimmer: false,     // sliding puzzle -> unlocks Küche + Treppe/1.Stock
+  solvedMusikzimmer: false,    // tone sequence -> reward only
+  solvedKeller: false,         // maze -> required (with musikzimmer) for schlafzimmer access
+  musikschluesselFound: false  // whether the music room key toast has already fired
 };
 
 function loadState(){
@@ -533,6 +668,8 @@ function renderRoom(roomId, playDoorSound){
   if(playDoorSound){
     try{ doorAudio.currentTime = 0; doorAudio.play().catch(()=>{}); }catch(e){}
   }
+
+  setBackgroundTrack(roomId === "keller" ? "audio/keller.mp3" : "audio/hintergrund-musik.mp3");
 
   // hotspots
   hotspotLayer.innerHTML = "";
@@ -577,6 +714,12 @@ function renderRoom(roomId, playDoorSound){
     if(target.locked && !state.inventory.includes(target.requiresItem)){
       locked = true;
     }
+    if(exit.requiresFlag && !state[exit.requiresFlag]){
+      locked = true;
+    }
+    if(exit.requiresFlags && !exit.requiresFlags.every(f=>state[f])){
+      locked = true;
+    }
     b.textContent = (locked ? "🔒 " : "") + exit.label;
     if(locked) b.classList.add("locked");
     b.addEventListener("click", ()=>{
@@ -588,6 +731,34 @@ function renderRoom(roomId, playDoorSound){
     });
     exitBar.appendChild(b);
   });
+
+  // minigame hotspot (a fixed on-screen button, not hidden, since it represents
+  // a piece of furniture the player is meant to interact with deliberately)
+  const existingBtn = document.getElementById("minigameBtn");
+  if(existingBtn) existingBtn.remove();
+  if(room.minigame){
+    const solvedKey = "solved" + room.name.replace(/[^a-zA-Z]/g,"");
+    const mgBtn = document.createElement("button");
+    mgBtn.id = "minigameBtn";
+    mgBtn.className = "exit-btn";
+    mgBtn.style.background = "rgba(90,60,20,0.9)";
+    let already = false;
+    if(room.minigame === "code") already = state.solvedSpeisezimmer;
+    if(room.minigame === "memory") already = state.solvedBibliothek;
+    if(room.minigame === "slide") already = state.solvedWohnzimmer;
+    if(room.minigame === "tone") already = state.solvedMusikzimmer;
+    if(room.minigame === "maze") already = state.solvedKeller;
+    const labels = { code:"Weinregal untersuchen", memory:"Kartenspiel", slide:"Zerrissenes Foto", tone:"Klavier spielen", maze:"Truhe im Dunkeln suchen" };
+    mgBtn.textContent = (already ? "✓ " : "🧩 ") + labels[room.minigame];
+    mgBtn.addEventListener("click", ()=>{
+      if(room.minigame === "code") openCodeGame();
+      if(room.minigame === "memory") openMemoryGame();
+      if(room.minigame === "slide") openSlideGame();
+      if(room.minigame === "tone") openToneGame();
+      if(room.minigame === "maze") openMazeGame();
+    });
+    exitBar.appendChild(mgBtn);
+  }
 }
 
 function flashLocked(btn){
@@ -620,6 +791,330 @@ function updateBagCount(){
   bagCount.textContent = state.inventory.length;
 }
 
+function showAchToast(text){
+  const toast = document.getElementById("achToast");
+  toast.textContent = "🏆 " + text;
+  toast.classList.add("show");
+  clearTimeout(showAchToast._t);
+  showAchToast._t = setTimeout(()=>{ toast.classList.remove("show"); }, 3200);
+}
+
+// ---------- Minigames ----------
+function grantReward(itemId, text){
+  if(itemId && !state.inventory.includes(itemId)) state.inventory.push(itemId);
+  updateBagCount();
+  showAchToast(text);
+}
+
+function closeAllMinigameModals(){
+  ["codeModal","memoryModal","slideModal","toneModal","mazeModal"].forEach(id=>{
+    document.getElementById(id).classList.remove("active");
+  });
+}
+
+function pauseBgMusicForMinigame(){
+  bgAudio.pause();
+}
+function resumeBgMusicAfterMinigame(){
+  bgAudio.play().catch(()=>{});
+}
+
+// --- 1) Zahlencode-Schloss (Speisezimmer) ---
+function openCodeGame(){
+  const modal = document.getElementById("codeModal");
+  const stage = document.getElementById("codeStage");
+  if(state.solvedSpeisezimmer){
+    stage.innerHTML = `<p>Das Weinregal steht bereits offen — du hast den Code schon geknackt. Der Weg zur Bibliothek ist frei.</p>`;
+    modal.classList.add("active");
+    return;
+  }
+  stage.innerHTML = `
+    <p>Auf drei kleinen Etiketten an den Flaschen stehen die Zahlen <strong>4</strong>, <strong>7</strong> und <strong>1</strong> — ungeordnet. Ordne sie von der kleinsten zur größten Zahl und gib sie ein.</p>
+    <div class="code-input">
+      <input type="tel" maxlength="1" id="c0">
+      <input type="tel" maxlength="1" id="c1">
+      <input type="tel" maxlength="1" id="c2">
+    </div>
+    <button class="btn-main" id="codeSubmit">Öffnen</button>
+    <p id="codeMsg" style="margin-top:10px;color:#c96060;"></p>
+  `;
+  modal.classList.add("active");
+  const inputs = [document.getElementById("c0"),document.getElementById("c1"),document.getElementById("c2")];
+  inputs.forEach((inp,i)=>{
+    inp.addEventListener("input", ()=>{ if(inp.value && inputs[i+1]) inputs[i+1].focus(); });
+  });
+  document.getElementById("codeSubmit").addEventListener("click", ()=>{
+    const code = inputs.map(i=>i.value).join("");
+    if(code === "147"){
+      state.solvedSpeisezimmer = true;
+      grantReward("weinkorken", "Rätsel gelöst! Weinkorken erhalten — der Weg zur Bibliothek ist frei.");
+      closeAllMinigameModals();
+      renderRoom(currentRoom, false);
+    } else {
+      document.getElementById("codeMsg").textContent = "Das ist nicht die richtige Reihenfolge. Versuch's nochmal.";
+    }
+  });
+}
+
+// --- 2) Memory (Bibliothek) ---
+function openMemoryGame(){
+  const modal = document.getElementById("memoryModal");
+  const stage = document.getElementById("memoryStage");
+  if(state.solvedBibliothek){
+    stage.innerHTML = `<p>Das Kartenspiel ist bereits gelöst — der Weg zum Wohnzimmer ist frei.</p>`;
+    modal.classList.add("active");
+    return;
+  }
+  const pairIcons = [IMG.items.buch, IMG.items.feder, IMG.items.globus];
+  let deck = [...pairIcons, ...pairIcons];
+  deck = deck.map(v=>({icon:v, key:Math.random()})).sort((a,b)=>a.key-b.key).map(d=>d.icon);
+
+  stage.innerHTML = `<p>Finde die drei passenden Kartenpaare.</p><div class="memory-grid" id="memGrid"></div>`;
+  const grid = document.getElementById("memGrid");
+  let first = null, lock = false, matches = 0;
+  deck.forEach((icon, idx)=>{
+    const card = document.createElement("div");
+    card.className = "memory-card";
+    card.innerHTML = `<img src="${icon}" alt="">`;
+    card.addEventListener("click", ()=>{
+      if(lock || card.classList.contains("revealed") || card.classList.contains("matched")) return;
+      card.classList.add("revealed");
+      if(!first){
+        first = {card, icon, idx};
+      } else {
+        if(first.icon === icon && first.idx !== idx){
+          card.classList.add("matched");
+          first.card.classList.add("matched");
+          matches++;
+          first = null;
+          if(matches === pairIcons.length){
+            state.solvedBibliothek = true;
+            grantReward("lesezeichen", "Kartenspiel gelöst! Lesezeichen erhalten — der Weg zum Wohnzimmer ist frei.");
+            setTimeout(()=>{ closeAllMinigameModals(); renderRoom(currentRoom, false); }, 700);
+          }
+        } else {
+          lock = true;
+          setTimeout(()=>{
+            card.classList.remove("revealed");
+            first.card.classList.remove("revealed");
+            first = null;
+            lock = false;
+          }, 700);
+        }
+      }
+    });
+    grid.appendChild(card);
+  });
+  modal.classList.add("active");
+}
+
+// --- 3) Schiebepuzzle (Wohnzimmer) ---
+function openSlideGame(){
+  const modal = document.getElementById("slideModal");
+  const stage = document.getElementById("slideStage");
+  if(state.solvedWohnzimmer){
+    stage.innerHTML = `<p>Das Foto ist bereits wieder zusammengesetzt — die Küche (und die Treppe ins Obergeschoss) sind frei.</p>`;
+    modal.classList.add("active");
+    return;
+  }
+  stage.innerHTML = `<p>Setze das zerrissene Familienfoto wieder zusammen. Tippe zwei Teile an, um sie zu tauschen.</p><div class="slide-grid" id="slideGrid"></div>`;
+  const grid = document.getElementById("slideGrid");
+  const size = 3;
+  let order = [0,1,2,3,4,5,6,7,8];
+  // shuffle until not already solved-looking
+  do { order = order.map(v=>({v,k:Math.random()})).sort((a,b)=>a.k-b.k).map(o=>o.v); }
+  while(order.every((v,i)=>v===i));
+
+  let selected = null;
+  function draw(){
+    grid.innerHTML = "";
+    order.forEach((tileIndex, pos)=>{
+      const tile = document.createElement("div");
+      tile.className = "slide-tile";
+      const col = tileIndex % size, row = Math.floor(tileIndex/size);
+      tile.style.backgroundImage = `url(${IMG.puzzle.portrait})`;
+      tile.style.backgroundPosition = `-${col*80}px -${row*80}px`;
+      tile.addEventListener("click", ()=>{
+        if(selected === null){
+          selected = pos;
+          tile.classList.add("selected");
+        } else if(selected === pos){
+          tile.classList.remove("selected");
+          selected = null;
+        } else {
+          const tmp = order[selected];
+          order[selected] = order[pos];
+          order[pos] = tmp;
+          selected = null;
+          draw();
+          if(order.every((v,i)=>v===i)){
+            state.solvedWohnzimmer = true;
+            grantReward("fotofragment", "Foto zusammengesetzt! Foto-Fragment erhalten — Küche und Treppe ins Obergeschoss sind frei.");
+            setTimeout(()=>{ closeAllMinigameModals(); renderRoom(currentRoom, false); }, 900);
+          }
+        }
+      });
+      grid.appendChild(tile);
+    });
+  }
+  draw();
+  modal.classList.add("active");
+}
+
+// --- 4) Ton-Sequenz / Simon Says (Musikzimmer) ---
+function openToneGame(){
+  const modal = document.getElementById("toneModal");
+  const stage = document.getElementById("toneStage");
+  pauseBgMusicForMinigame();
+  if(state.solvedMusikzimmer){
+    stage.innerHTML = `<p>Du hast die Melodie schon einmal perfekt gespielt.</p>`;
+    modal.classList.add("active");
+    return;
+  }
+  const notes = [
+    { freq:261.6, color:"#d99", label:"C" },
+    { freq:293.7, color:"#dc9", label:"D" },
+    { freq:329.6, color:"#9d9", label:"E" },
+    { freq:349.2, color:"#9dd", label:"F" },
+    { freq:392.0, color:"#99d", label:"G" }
+  ];
+  stage.innerHTML = `<p>Hör dir die Melodie an ("Alle meine Entchen") und spiel sie nach.</p><div class="tone-pads" id="tonePads"></div><p id="toneMsg" style="margin-top:10px;"></p>`;
+  const padsEl = document.getElementById("tonePads");
+  const pads = notes.map((n,i)=>{
+    const pad = document.createElement("button");
+    pad.className = "tone-pad";
+    pad.style.background = n.color;
+    pad.textContent = n.label;
+    padsEl.appendChild(pad);
+    return pad;
+  });
+
+  let audioCtx = null;
+  function playTone(i){
+    try{
+      if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.frequency.value = notes[i].freq;
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.35);
+    }catch(e){}
+    pads[i].classList.add("active");
+    setTimeout(()=>pads[i].classList.remove("active"), 300);
+  }
+
+  // "Alle meine Entchen": C D E F G G
+  const sequence = [0,1,2,3,4,4];
+  let playerStep = 0, accepting = false;
+
+  function playSequence(){
+    accepting = false;
+    document.getElementById("toneMsg").textContent = "Hör zu...";
+    let i = 0;
+    const iv = setInterval(()=>{
+      playTone(sequence[i]);
+      i++;
+      if(i >= sequence.length){
+        clearInterval(iv);
+        setTimeout(()=>{ accepting = true; playerStep = 0; document.getElementById("toneMsg").textContent = "Jetzt bist du dran!"; }, 400);
+      }
+    }, 550);
+  }
+
+  pads.forEach((pad,i)=>{
+    pad.addEventListener("click", ()=>{
+      if(!accepting) return;
+      playTone(i);
+      if(sequence[playerStep] === i){
+        playerStep++;
+        if(playerStep === sequence.length){
+          accepting = false;
+          state.solvedMusikzimmer = true;
+          grantReward("stimmgabel", "Melodie perfekt gespielt! Stimmgabel erhalten.");
+          document.getElementById("toneMsg").textContent = "Perfekt gespielt! 🎵";
+          setTimeout(()=>{ closeAllMinigameModals(); resumeBgMusicAfterMinigame(); renderRoom(currentRoom, false); }, 900);
+        }
+      } else {
+        document.getElementById("toneMsg").textContent = "Nicht ganz — versuch's nochmal.";
+        setTimeout(playSequence, 900);
+      }
+    });
+  });
+
+  modal.classList.add("active");
+  setTimeout(playSequence, 500);
+}
+
+// --- 5) Labyrinth (Keller) ---
+function openMazeGame(){
+  const modal = document.getElementById("mazeModal");
+  const stage = document.getElementById("mazeStage");
+  if(state.solvedKeller){
+    stage.innerHTML = `<p>Du hast die Truhe im Dunkeln schon gefunden.</p>`;
+    modal.classList.add("active");
+    return;
+  }
+  // 0 = wall, 1 = path
+  const layout = [
+    [1,1,0,0,0,0,0],
+    [0,1,1,1,1,1,0],
+    [0,1,0,0,0,1,0],
+    [0,1,1,1,0,1,0],
+    [0,0,0,1,0,1,0],
+    [0,1,1,1,0,1,1],
+    [0,1,0,0,0,0,1]
+  ];
+  const rows = layout.length, cols = layout[0].length;
+  let px = 0, py = 0; // start top-left
+  const ex = cols-1, ey = rows-1; // exit bottom-right
+
+  stage.innerHTML = `
+    <p>Taste dich im Dunkeln zur alten Truhe am anderen Ende des Kellers vor.</p>
+    <div class="maze-grid" id="mazeGrid" style="grid-template-columns:repeat(${cols},36px);"></div>
+    <div class="maze-controls">
+      <button class="maze-btn up">↑</button>
+      <button class="maze-btn left">←</button>
+      <button class="maze-btn down">↓</button>
+      <button class="maze-btn right">→</button>
+    </div>
+  `;
+  const grid = document.getElementById("mazeGrid");
+
+  function draw(){
+    grid.innerHTML = "";
+    for(let y=0;y<rows;y++){
+      for(let x=0;x<cols;x++){
+        const cell = document.createElement("div");
+        cell.className = "maze-cell";
+        if(layout[y][x] === 0) cell.classList.add("wall");
+        if(x===ex && y===ey) cell.classList.add("exit");
+        if(x===px && y===py) cell.classList.add("player");
+        grid.appendChild(cell);
+      }
+    }
+  }
+  function tryMove(dx,dy){
+    const nx = px+dx, ny = py+dy;
+    if(nx<0||ny<0||nx>=cols||ny>=rows) return;
+    if(layout[ny][nx] === 0) return;
+    px = nx; py = ny;
+    draw();
+    if(px===ex && py===ey){
+      state.solvedKeller = true;
+      grantReward("amulett", "Truhe gefunden! Ein altes Amulett kommt zum Vorschein.");
+      setTimeout(()=>{ closeAllMinigameModals(); renderRoom(currentRoom, false); }, 900);
+    }
+  }
+  stage.querySelector(".up").addEventListener("click", ()=>tryMove(0,-1));
+  stage.querySelector(".down").addEventListener("click", ()=>tryMove(0,1));
+  stage.querySelector(".left").addEventListener("click", ()=>tryMove(-1,0));
+  stage.querySelector(".right").addEventListener("click", ()=>tryMove(1,0));
+  draw();
+  modal.classList.add("active");
+}
+
 // ---------- Drawer (dr3i) ----------
 function openDrawer(){
   const modal = document.getElementById("drawerModal");
@@ -629,6 +1124,12 @@ function openDrawer(){
     <img src="${IMG.items.kaestchen}" alt="Kästchen" id="boxImg">
   `;
   modal.classList.add("active");
+  if(!state.musikschluesselFound){
+    state.musikschluesselFound = true;
+    if(!state.inventory.includes("musikschluessel")) state.inventory.push("musikschluessel");
+    updateBagCount();
+    showAchToast("Du hast den Schlüssel zum Musikzimmer in der Schublade gefunden!");
+  }
   document.getElementById("boxImg").addEventListener("click", ()=>{
     stage.innerHTML = `
       <p>Im Kästchen liegt eine kleine Sammlung alter CDs. Das sind Drei Fragezeichen Geschichten, die es so nirgendwo mehr zu hören, oder zu kaufen gibt. Ein echter Schatz!</p>
@@ -692,6 +1193,26 @@ function buildAchievements(){
     list.appendChild(row);
   });
   totalEl.textContent = `Insgesamt: ${totalFound} von ${totalItems} Schätzen gefunden`;
+
+  const mgList = document.getElementById("mgList");
+  const minigames = [
+    { flag:"solvedSpeisezimmer", label:"🍷 Weinregal-Code" },
+    { flag:"solvedBibliothek", label:"🃏 Kartenspiel" },
+    { flag:"solvedWohnzimmer", label:"🖼️ Zerrissenes Foto" },
+    { flag:"solvedMusikzimmer", label:"🎵 Melodie" },
+    { flag:"solvedKeller", label:"🕯️ Labyrinth im Keller" }
+  ];
+  mgList.innerHTML = "";
+  let mgSolved = 0;
+  minigames.forEach(mg=>{
+    const done = !!state[mg.flag];
+    if(done) mgSolved++;
+    const row = document.createElement("div");
+    row.className = "ach-row";
+    row.innerHTML = `<span>${mg.label}</span><span>${done ? "✓ gelöst" : "offen"}</span>`;
+    mgList.appendChild(row);
+  });
+  document.getElementById("mgTotal").textContent = `Minispiele: ${mgSolved} von ${minigames.length} gelöst`;
 }
 
 // ---------- Inventory modal ----------
@@ -719,6 +1240,7 @@ document.getElementById("bagBtn").addEventListener("click", ()=>{
 document.querySelectorAll("[data-close]").forEach(btn=>{
   btn.addEventListener("click", ()=>{
     document.getElementById(btn.dataset.close).classList.remove("active");
+    if(btn.dataset.close === "toneModal") resumeBgMusicAfterMinigame();
   });
 });
 
@@ -740,6 +1262,15 @@ function reportMissing(name){
   }
 }
 bgAudio.addEventListener("error", ()=> reportMissing("hintergrund-musik.mp3"));
+
+let currentTrack = "audio/hintergrund-musik.mp3";
+function setBackgroundTrack(trackPath){
+  if(currentTrack === trackPath) return;
+  currentTrack = trackPath;
+  bgAudio.src = trackPath;
+  bgAudio.currentTime = 0;
+  bgAudio.play().catch(()=>{ reportMissing(trackPath.split("/").pop() + " (Wiedergabe blockiert)"); });
+}
 doorAudio.addEventListener("error", ()=> reportMissing("tuer.mp3"));
 
 // ---------- Start ----------
